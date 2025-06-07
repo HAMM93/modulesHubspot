@@ -1,0 +1,83 @@
+<div class="banner-module" style="background-image: url('{{ module.bg_desktop.url }}');">
+    <div class="info-section">
+        <h2>{{ module.texto_informativo }}</h2>
+    </div>
+
+    <div class="carousel-section" id="carousel-container">
+        <!-- Slides se inyectan aquí -->
+    </div>
+</div>
+<script> 
+    document.addEventListener("DOMContentLoaded", async () => {
+    const loadChildren = async () => {
+        let password = generateHash("Wilmar");
+
+        const response = await $.ajax({
+        url: "http://chosenapi.worldvision.co/api/apphubspot/listSponsored",
+        type: "POST",
+        dataType: "xml",
+        data: { password },
+        });
+
+        const json = $.xml2json(response);
+        let allChildren = json["#document"]["soap:Envelope"]["soap:Body"]
+        .PropuestosEcomResponse.PropuestosEcomResult["diffgr:diffgram"]
+        .NewDataSet.Table;
+
+        let shuffled = allChildren.sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 4); // Solo 4 niños aleatorios
+    };
+
+    const renderCarousel = (children) => {
+        const container = document.querySelector("#carousel-container");
+        container.innerHTML = "";
+
+        children.forEach((child, index) => {
+        const slide = document.createElement("div");
+        slide.classList.add("slide");
+
+        slide.innerHTML = `
+            <img src="https://2623910.fs1.hubspotusercontent-na1.net/hubfs/2623910/FOTO%20COLOMBIA/${child.ChildID}.jpg" alt="${child.GivenName}" />
+            <p>${child.GivenName} - ${child.Age} años</p>
+            <button class="apadrina-btn primary" data-id="${child.ID}">Apadríname</button>
+        `;
+
+        container.appendChild(slide);
+        });
+
+        setupCarousel(); // para autoplay y navegación
+    };
+
+    const children = await loadChildren();
+    renderCarousel(children);
+
+    // Guardar en localStorage
+    $(document).on("click", ".apadrina-btn", function () {
+        let id = parseInt($(this).attr("data-id"));
+        let selected = children.find((c) => parseInt(c.ID) === id);
+
+        let gen = selected.GenderCode === "M" ? "Niño" : "Niña";
+        let checkoutItems = JSON.parse(localStorage.getItem("cart-childen")) || [];
+
+        let exists = checkoutItems.find((x) => x.id === id);
+        if (!exists) {
+        checkoutItems.push({
+            type: "childen",
+            monto: parseInt({{ module.monto_inicial }}),
+            id: id,
+            idChild: selected.ChildID,
+            img: `https://2623910.fs1.hubspotusercontent-na1.net/hubfs/2623910/FOTO%20COLOMBIA/${selected.ChildID}.jpg`,
+            name: selected.GivenName,
+            gen: gen,
+            age: selected.Age,
+            city: selected.City,
+            select_monto: "opc",
+        });
+        localStorage.setItem("cart-childen", JSON.stringify(checkoutItems));
+        }
+
+        window.location.href = "{{ module.checkout_url }}";
+    });
+});
+
+<script/>

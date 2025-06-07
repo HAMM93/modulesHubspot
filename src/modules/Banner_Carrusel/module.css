@@ -1,0 +1,30 @@
+.banner-module {
+  display: flex;
+  background-size: cover;
+  background-position: center;
+  padding: 2rem;
+  flex-wrap: wrap;
+}
+
+.info-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-family: "Degular Display", sans-serif;
+}
+
+.carousel-section {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+/* Ajustes para mobile */
+@media (max-width: 768px) {
+  .banner-module {
+    flex-direction: column;
+    background-image: url('{{ module.bg_mobile.url }}');
+  }
+}
